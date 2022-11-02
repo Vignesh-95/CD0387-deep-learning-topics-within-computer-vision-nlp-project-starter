@@ -38,6 +38,10 @@ def create_data_loaders(data, batch_size):
     This is an optional function that you may or may not need to implement
     depending on whether you need to use data loaders or not
     '''
+    # Prepare Data - different data sets
+    # Transforms on each
+    # Load that to S3
+    
     pass
 
 def main(args):
