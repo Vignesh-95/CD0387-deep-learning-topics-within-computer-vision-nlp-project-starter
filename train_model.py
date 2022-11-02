@@ -10,6 +10,9 @@ import torchvision.transforms as transforms
 
 import argparse
 
+# Other Dependencies
+import boto3
+
 
 #TODO: Import dependencies for Debugging andd Profiling
 
@@ -41,7 +44,36 @@ def create_data_loaders(data, batch_size):
     This is an optional function that you may or may not need to implement
     depending on whether you need to use data loaders or not
     '''
+    
+    # 320 * 240 Image shape
+    
+    
     pass
+
+
+class BloodCellDataset(torch.utils.data.Dataset):
+    def __init__(self, s3_dataset_path, local_data_dir):
+        self.s3_dataset_path = s3_dataset_path
+        self.local_data_dir = local_data_dir
+        
+        # Must I do some of this work like create .lst files etc outside and place in s3 already, while training job just uses that or must that work also be performed here
+        # or is it fine I have not annotation - metadata - csv file etc and just do it form the images right here
+        # i.e is pattern to do E of ETL - extraction outside the training script, in the submission script or the jupyter notebook?
+        # What about the costs involved???
+        # Try to name variables just like other dataset class and class we inherting from
+        # conventions - to be easy to use
+        # pickeled file?
+        # downloading one file at a time using boto 3 client may not be great!!!
+        # this means best option would be to sync using cli - prior to trainign script!!!
+    
+        s3 = boto3.client('s3')
+        s3.download_file
+        self.images = 
+        
+        self.data = 
+        self.target
+        
+
 
 def main(args):
     '''
