@@ -16,20 +16,43 @@ import boto3
 
 #TODO: Import dependencies for Debugging andd Profiling
 
-def test(model, test_loader):
+def test(model, test_loader, device):
     '''
     TODO: Complete this function that can take a model and a 
           testing data loader and will get the test accuray/loss of the model
           Remember to include any debugging/profiling hooks that you might need
     '''
+    
+    for data, label in test_loader:
+        # send data, model and label to use gpu device or cpu device - pass that in as the parameter
+        model.eval()
+        # work only when grads are set to zero
+        output = model(data)
+        cost = criterion(label, ouput)
+        
+        # calculate accuracy and loss etc
     pass
 
-def train(model, train_loader, criterion, optimizer):
+def train(model, train_loader, validation_loader, device, criterion, optimizer):
     '''
     TODO: Complete this function that can take a model and
           data loaders for training and will get train the model
           Remember to include any debugging/profiling hooks that you might need
     '''
+    for data, label in train_loader:
+        # send data, model and label to use gpu device or cpu device - pass that in as the parameter
+        model.train()
+        optimizer.zero_grad()
+        output = model(data)
+        cost = criterion(label, ouput)
+        optimizer.backward()
+        optimizer.step()
+        
+        # calculate accuracy and loss etc
+        
+        # calculate on validation data set and think about early stopping etc!!
+        model.eval()
+    
     pass
     
 def net():
@@ -37,7 +60,14 @@ def net():
     TODO: Complete this function that initializes your model
           Remember to use a pretrained model
     '''
-    pass
+    # Seems like another version of pytorch does it differently, where this parameter is deprecated
+    model = models.resnet50(pretrained=True)
+    number_of_classes = 4
+    fc_input_features_count = model.fc.in_features
+    last_fc = nn.Sequential(nn.linear(fc_input_features, number_of_classes)
+    model.fc = last_fc
+    
+    return model
 
 def create_data_loaders(data, batch_size):
     '''
@@ -48,7 +78,7 @@ def create_data_loaders(data, batch_size):
     # 320 * 240 Image shape
     
     
-    pass
+    return train_loader, validation_loader, test_loader
 
 
 class BloodCellDataset(torch.utils.data.Dataset):
@@ -84,14 +114,22 @@ def main(args):
     '''
     TODO: Create your loss and optimizer
     '''
-    loss_criterion = None
-    optimizer = None
+    loss_criterion = torch.NNLoss()
+    # Some are parameters
+    optimizer = optim.Adagrad(model.parameters(), lr=args.lr, momentum=args.momentum)
     
+    device = ""
+    if asdfas:
+       pass
+    else:
+        pass
+    
+                            
     '''
     TODO: Call the train function to start training your model
     Remember that you will need to set up a way to get training data from S3
     '''
-    model=train(model, train_loader, loss_criterion, optimizer)
+    model=train(model, train_loader, validation_loader, device, loss_criterion, optimizer)
     
     '''
     TODO: Test the model to see its accuracy
@@ -108,7 +146,8 @@ if __name__=='__main__':
     '''
     TODO: Specify any training args that you might need
     '''
-    
+    # Hyperparametrs received below etc
+    args.add_argument()
     args=parser.parse_args()
     
     main(args)
