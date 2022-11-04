@@ -15,6 +15,7 @@ import boto3
 
 
 #TODO: Import dependencies for Debugging andd Profiling
+import smdebug.pytorch as smd
 
 def test(model, test_loader, device):
     '''
@@ -106,15 +107,21 @@ class BloodCellDataset(torch.utils.data.Dataset):
 
 
 def main(args):
+                            
+    hook = smd.get_hook(create_if_not_exists=True)
     '''
     TODO: Initialize a model by calling the net function
     '''
     model=net()
+                            
+    hook.register_module(model)
     
     '''
     TODO: Create your loss and optimizer
     '''
     loss_criterion = torch.NNLoss()
+    # Is this the correct place to do this?
+    hook.register_loss_(loss_criterion)
     # Some are parameters
     optimizer = optim.Adagrad(model.parameters(), lr=args.lr, momentum=args.momentum)
     
@@ -129,11 +136,13 @@ def main(args):
     TODO: Call the train function to start training your model
     Remember that you will need to set up a way to get training data from S3
     '''
+    hook.set_mode(ModeKeys.TRAIN)
     model=train(model, train_loader, validation_loader, device, loss_criterion, optimizer)
     
     '''
     TODO: Test the model to see its accuracy
     '''
+    hook.set_mode(ModeKeys.EVAL)
     test(model, test_loader, criterion)
     
     '''
