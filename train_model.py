@@ -7,6 +7,7 @@ import torch.optim as optim
 import torchvision
 import torchvision.models as models
 import torchvision.transforms as transforms
+import pickle
 
 import argparse
 
@@ -77,13 +78,25 @@ def create_data_loaders(data, batch_size):
     '''
     
     # 320 * 240 Image shape
+    # Should I have a train/test paratmeter?
+                            
+    train_transforms = transforms.Compose()
+    test_transforms = transforms.Compose()
+    train_dataset = BloodCellDataset()
+    test_dataset = BloodCellDataset()
     
     
     return train_loader, validation_loader, test_loader
 
 
+# The way this class is starting to look more like CIFAR 10 makes it seem redundant - it only has s3 particular changes, but other wise main pre processing is being done outside
 class BloodCellDataset(torch.utils.data.Dataset):
-    def __init__(self, s3_dataset_path, local_data_dir):
+    def __init__(self, s3_dataset_path, local_data_dir, transforms, target_transforms):
+        
+        # Can be composed list of transforms
+        self.transforms = transforms
+        self.target_transforms = target_transforms
+                            
         self.s3_dataset_path = s3_dataset_path
         self.local_data_dir = local_data_dir
         
@@ -98,12 +111,31 @@ class BloodCellDataset(torch.utils.data.Dataset):
         # this means best option would be to sync using cli - prior to trainign script!!!
     
         s3 = boto3.client('s3')
-        s3.download_file
-        self.images = 
+        s3_path_split = s3_dataset_path.split("/")
+        bucket = s3_path_split[2]
+        object_name = s3_path_split[3:].join("/")
+        s3.download_file(bucket, object_name, local_data_dir)
+        self.data_set_train = pickle.load(open(local_data_dir, 'rb'))
         
-        self.data = 
-        self.target
+        self.data = self.data_set_train['data']
+        self.target = self.data_set_train['labels']
+                            
+                            
+     def __len__():
+        return len(self.data)
+                            
+     def __getitem__(self, index : int):
+        image, label = self.data[index], self.target[index]
+                            
+        image = Image.fromarray(image)
+                            
+        if self.transforms is not None:
+           image = self.transforms(image)
         
+        if self.target_transforms is not None:
+           label = self.target_transforms(label)
+                            
+        return image, label
 
 
 def main(args):
